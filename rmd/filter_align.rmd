@@ -69,8 +69,9 @@ taxon_IDs <-
 taxon_IDs
 ```
 
+# Filter data 
 
-## Filter uniprot metadata by taxonID 
+## Filter uniprot metadata by taxonIDs from curated list of species
 
 ```{r filter_uniprot_metadata_by_taxonID}
 
@@ -79,3 +80,27 @@ filtered_protein_metadata <-
 
 filtered_protein_metadata
 ```
+
+## Filter uniprot fasta sequences by uniprotIDs from curated species and write new fasta file
+
+```{r filter_uniprot_fasta_by_taxonID}
+
+filtered_protein_fasta <-
+protein_seqs[filtered_protein_metadata$Entry]
+
+filtered_protein_fasta
+
+writeXStringSet(filtered_protein_fasta, here::here("data", "MAFFT-alignment", "filtered-uniprot-proteins-IPR040241-20220708.fasta"))
+```
+
+
+
+This is the command I ran from the terminal to get a MAFFT alignment, but I don't know how to incorporate it into an .rmd file - TO DO 
+
+command=
+"/usr/local/bin/mafft"  --localpair  --maxiterate 16 --reorder "data/MAFFT-alignment/filtered-uniprot-proteins-IPR040241-20220708.fasta" > "data/MAFFT-alignment/MAFFT-aligned.fasta"
+
+
+
+
+
