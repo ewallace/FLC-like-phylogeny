@@ -51,7 +51,10 @@ protein_metadata
 ```{r load_protein_sequences}
 protein_seqs <- 
   here::here("data", "uniprot", "uniprot-proteins-IPR040241-20220708.fasta") %>%
-  Biostrings::readAAStringSet()
+  Biostrings::readAAStringSet() %>%
+  magrittr::set_names(
+    stringr::word(names(.), start = 2L, sep = fixed("|"))
+  )
 
 protein_seqs
 ```
