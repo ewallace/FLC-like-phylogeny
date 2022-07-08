@@ -1,0 +1,57 @@
+---
+title: "Filtering and multiple sequence alignment of FLC-like proteins"
+author: "Edward Wallace"
+date: "2022-07-08"
+output: 
+  html_document:
+    toc:
+      true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+library(Biostrings)
+```
+
+# Summary
+
+This document is for filtering and multiple sequence alignment of FLC-like proteins.
+
+It takes:
+
+- protein sequences from `data/uniprot/uniprot-proteins-IPR040241-20220708.fasta`
+- list of representative taxa from XXXXX
+
+Then:
+
+- filters the sequences only from those taxa TO DO
+- multiple sequence alignment of chosen sequences TO DO
+- maybe, make a nice figure of the multiple sequence alignment? TO DO
+- trim the alignments TO DO
+- maybe, a quick approximate phylogenetic tree using fasttree? TO DO
+
+# Load data
+
+## Load protein metadata
+
+```{r load_protein_metadata}
+protein_metadata <- 
+  here::here("data", "uniprot", "uniprot-proteins-IPR040241-20220708.tsv") %>%
+  readr::read_tsv() %>%
+  janitor::clean_names(case = "big_camel")
+
+protein_metadata
+```
+
+## Load protein sequences
+
+```{r load_protein_sequences}
+protein_seqs <- 
+  here::here("data", "uniprot", "uniprot-proteins-IPR040241-20220708.fasta") %>%
+  Biostrings::readAAStringSet()
+
+protein_seqs
+```
