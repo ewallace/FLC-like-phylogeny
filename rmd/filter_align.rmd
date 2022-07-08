@@ -58,3 +58,24 @@ protein_seqs <-
 
 protein_seqs
 ```
+
+## Load taxonIDs 
+
+```{r load_taxonIDs}
+taxon_IDs <- 
+  here::here("data", "uniprot", "TaxonIDs.txt") %>%
+  readr::read_tsv()
+
+taxon_IDs
+```
+
+
+## Filter uniprot metadata by taxonID 
+
+```{r filter_uniprot_metadata_by_taxonID}
+
+filtered_protein_metadata <- 
+  filter(protein_metadata, OrganismId %in% taxon_IDs$TaxonID)
+
+filtered_protein_metadata
+```

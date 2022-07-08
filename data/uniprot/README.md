@@ -10,3 +10,6 @@ Metadata including organism ID are in the .tsv file.
 
 - uniprot-proteins-IPR040241-20220708.fasta
 - uniprot-proteins-IPR040241-20220708.tsv
+
+A curated list of species and their taxonID are found in TaxonIDs.txt 
+

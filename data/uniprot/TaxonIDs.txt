@@ -1,0 +1,42 @@
+Species	TaxonID
+Cenococcum geophilum 1.58	794803
+Zymoseptoria tritici IPO323	336722
+Cyphellophora europaea CBS 101466	1220924
+Aspergillus fumigatus Af293	330879 
+Blastomyces dermatitidis ER-3	559297
+Histoplasma capsulatum G186AR	447093
+Trichophyton rubrum CBS 118892	559305
+Paracoccidioides brasiliensis Pb03	482561
+Blumeria graminis f. sp. tritici 96224	1268274
+Sclerotinia sclerotiorum 1980 UF-70	665079
+Pneumocystis wakefieldiae	38082 
+Candida albicans SC5314	237561
+Yarrowia lipolytica CLIB122	284591
+Komagataella phaffii CBS 7435	981350
+Saccharomyces cerevisiae S288C	559292
+Schizosaccharomyces pombe 972h-	284812
+Colletotrichum graminicola M1.001	645133
+Pyricularia oryzae 70-15	242507
+Neurospora crassa OR74A	367110 
+Fusarium oxysporum f. sp. lycopersici 4287		426428
+Pleurotus ostreatus PC15	1137138
+Malassezia globosa CBS 7966	425265
+Puccinia graminis f. sp. tritici CRL 75-36-700-3	418459
+Cryptococcus neoformans var. grubii H99	235443
+Kwoniella heveanensis CBS 569	1296119
+Ustilago maydis 521	237631
+Tulasnella calospora MUT 4182	1051891
+Limonomyces culmigenus	228944
+Allomyces macrogynus ATCC 38327	578462
+Catenaria anguillulae PL171	765915
+Spizellomyces punctatus DAOM BR117	645134
+Chytriomyces confervae	246404
+Rhizophlyctis rosea	64517
+Rhizophagus irregularis DAOM 181602=DAOM 197198	747089
+Gigaspora rosea	44941
+Rhizopus delemar RA 99-880	246409
+Thraustotheca clavata	74557
+Albugo candida 2VRR	911350
+Salpingoeca rosetta	946362
+Mucor circinelloides 1006PhL	1220926
+Linnemannia elongata AG-77	1314771
