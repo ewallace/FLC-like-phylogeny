@@ -14,6 +14,8 @@ library(tidyverse)
 library(here)
 library(janitor)
 library(Biostrings)
+library(ggmsa)
+library(taxize)
 ```
 
 # Summary
@@ -59,7 +61,7 @@ protein_seqs <-
 protein_seqs
 ```
 
-## Load taxonIDs 
+## Load taxonIDs and get taxon lineage dataframe
 
 ```{r load_taxonIDs}
 taxon_IDs <- 
@@ -67,6 +69,16 @@ taxon_IDs <-
   readr::read_tsv()
 
 taxon_IDs
+
+taxon_lineage <- taxize::classification(
+  taxon_IDs$TaxonID, 
+  db='ncbi') %>%
+  cbind() %>% 
+  select(c("clade", "phylum", "subphylum", "class","order","family","genus", "species", "strain", "query"))%>% 
+  mutate_at(10, as.numeric) %>%
+  dplyr::rename(taxonID = query) 
+
+taxon_lineage
 ```
 
 # Filter data 
@@ -76,9 +88,14 @@ taxon_IDs
 ```{r filter_uniprot_metadata_by_taxonID}
 
 filtered_protein_metadata <- 
-  filter(protein_metadata, OrganismId %in% taxon_IDs$TaxonID)
+  filter(protein_metadata, OrganismId %in% taxon_IDs$TaxonID) %>% 
+    dplyr::rename(uniprotID = Entry, taxonID = OrganismId, length = Length) %>% 
+    left_join(taxon_lineage) %>% 
+    select(c("uniprotID", "clade", "phylum", "subphylum", "class","order","family","genus", "species", "strain", "taxonID", "length"))
+    
 
 filtered_protein_metadata
+
 ```
 
 ## Filter uniprot fasta sequences by uniprotIDs from curated species and write new fasta file
@@ -86,21 +103,95 @@ filtered_protein_metadata
 ```{r filter_uniprot_fasta_by_taxonID}
 
 filtered_protein_fasta <-
-protein_seqs[filtered_protein_metadata$Entry]
+protein_seqs[filtered_protein_metadata$uniprotID]
 
 filtered_protein_fasta
 
-writeXStringSet(filtered_protein_fasta, here::here("data", "MAFFT-alignment", "filtered-uniprot-proteins-IPR040241-20220708.fasta"))
+#writeXStringSet(filtered_protein_fasta, here::here("data", "MAFFT-alignment", "filtered-uniprot-proteins-IPR040241-20220708.fasta"))
 ```
 
 
 
-This is the command I ran from the terminal to get a MAFFT alignment, but I don't know how to incorporate it into an .rmd file - TO DO 
 
-command=
-"/usr/local/bin/mafft"  --localpair  --maxiterate 16 --reorder "data/MAFFT-alignment/filtered-uniprot-proteins-IPR040241-20220708.fasta" > "data/MAFFT-alignment/MAFFT-aligned.fasta"
+## View length of proteins in the data set 
+
+I notcied that some of the proteins in the data set are much smalled than S. cerevisiae Flc2, so I made a quick histogram of protien length. I think that protiens <400 amino acids are probably misannotated or do not have the transmembrane domains. 
+
+```{r fig.width=4, fig.height=3}
+protein_length_histogram <-
+  ggplot(filtered_protein_metadata, aes(x=length)) + 
+  geom_histogram(binwidth=50, color="darkblue", fill="lightblue") + 
+  theme_classic()
+
+protein_length_histogram
+
+small_proteins <- filtered_protein_metadata %>%
+  filter(length < 400)
+
+small_proteins$uniprotID
+```
+# View topology of protien in the dataset 
+
+I predicted the topology of the proteins in my filtered list using DeepTMHMM. I ran the following code from the terminal, where PATH = the local file path to filtered_protein_fasta. 
+
+biolib run DTU/DeepTMHMM --fasta PATH 
+
+I saved the gff3 file in "data/protein_topology/DeepTMHMM_prediction/Deep_TMHMM_filtered-uniprot-proteins-IPR040241-20220708.gff3" and used the following code look at the transmembrane topology. 
+
+```{r}
+DeepTMHMM_result <- 
+read_table(
+  here::here("data/protein_topology/DeepTMHMM_prediction/Deep_TMHMM_filtered-uniprot-proteins-IPR040241-20220708.gff3"), 
+  col_names = c("uniprotID", "topology","dom_start","dom_end"),
+  col_types = "ccii",
+  comment = "#"
+  ) %>% 
+  mutate(
+    topology = factor(topology, 
+      levels = c("signal", "outside", "inside","periplasm", "TMhelix", "Beta sheet"),
+      labels = c("signal peptide", "outside", "inside", "periplasm","transmembrane helix", "beta sheet"))
+  ) %>% 
+  
+  full_join(filtered_protein_metadata)
+
+summary(DeepTMHMM_result)
+
+```
+
+# Plot number of TM helices histogram 
+
+This chunk counts the number of TM helices in each protien and plots a histogram. It also outputs a list of protiens with no TM helices because these are not included in the histogram. 
+
+```{r}
+
+TM_helix_df <- DeepTMHMM_result %>% 
+  group_by(uniprotID) %>% 
+  dplyr::filter(topology == "transmembrane helix") %>% 
+  mutate(topology = as.character(topology)) %>% 
+  count(topology) %>% 
+  dplyr::rename(TM_helix_number = n)
 
 
+TM_helix_number_histogram <- 
+  ggplot(TM_helix_df, aes(x = TM_helix_number)) +
+  geom_histogram(binwidth=1, color="darkblue", fill="lightblue") + 
+  theme_classic()
+  
+TM_helix_number_histogram
 
+# This chunk prints proteins with no transmembrane domains 
+a <- unique(DeepTMHMM_result$uniprotID)
+b <- unique(TM_helix_df$uniprotID)
+no_TMs <- union(setdiff(a,b), setdiff(b,a))
+no_TMs
+
+```
+
+
+TO DO: 
+
+Create one fasta file with 9TM protien sequences 
+Plot topology of protiens with >7 TM regions
+Mafft align sequences 
 
 
