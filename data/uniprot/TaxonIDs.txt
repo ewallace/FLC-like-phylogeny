@@ -38,5 +38,13 @@ Rhizopus delemar RA 99-880	246409
 Thraustotheca clavata	74557
 Albugo candida 2VRR	911350
 Salpingoeca rosetta	946362
+Boletus edulis BED1	1328754
+Catenaria anguillulae PL171	765915
+Rhodotorula toruloides NP11	1130832
+Batrachochytrium dendrobatidis	109871
+Acaulopage tetraceros	1172177
+Entomophthora muscae	34485
 Mucor circinelloides 1006PhL	1220926
+Synchytrium endobioticum	286115
+Powellomyces hirtus	109895
 Linnemannia elongata AG-77	1314771

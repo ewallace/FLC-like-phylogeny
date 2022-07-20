@@ -94,7 +94,8 @@ filtered_protein_metadata <-
     select(c("uniprotID", "clade", "phylum", "subphylum", "class","order","family","genus", "species", "strain", "taxonID", "length"))
     
 
-filtered_protein_metadata
+filtered_protein_metadata %>% 
+  dplyr::filter(phylum == "Chytridiomycota")
 
 ```
 
@@ -107,7 +108,7 @@ protein_seqs[filtered_protein_metadata$uniprotID]
 
 filtered_protein_fasta
 
-#writeXStringSet(filtered_protein_fasta, here::here("data", "MAFFT-alignment", "filtered-uniprot-proteins-IPR040241-20220708.fasta"))
+writeXStringSet(filtered_protein_fasta, here::here("data", "MAFFT-alignment", "filtered-uniprot-proteins-IPR040241-20220708.fasta"))
 ```
 
 
@@ -136,12 +137,14 @@ I predicted the topology of the proteins in my filtered list using DeepTMHMM. I 
 
 biolib run DTU/DeepTMHMM --fasta PATH 
 
+biolib run DTU/DeepTMHMM --fasta /Users/s1427471/Documents/PhD/FLC-like-phylogeny/data/MAFFT-alignment/filtered-uniprot-proteins-IPR040241-20220708.fasta
+
 I saved the gff3 file in "data/protein_topology/DeepTMHMM_prediction/Deep_TMHMM_filtered-uniprot-proteins-IPR040241-20220708.gff3" and used the following code look at the transmembrane topology. 
 
 ```{r}
 DeepTMHMM_result <- 
 read_table(
-  here::here("data/protein_topology/DeepTMHMM_prediction/Deep_TMHMM_filtered-uniprot-proteins-IPR040241-20220708.gff3"), 
+  here::here("data/protein_topology/DeepTMHMM_prediction/Deep_TMHMM_filtered-uniprot-proteins-IPR040241-2022-07-20.gff3"), 
   col_names = c("uniprotID", "topology","dom_start","dom_end"),
   col_types = "ccii",
   comment = "#"
@@ -160,7 +163,7 @@ summary(DeepTMHMM_result)
 
 # Plot number of TM helices histogram 
 
-This chunk counts the number of TM helices in each protien and plots a histogram. It also outputs a list of protiens with no TM helices because these are not included in the histogram. 
+This chunk counts the number of TM helices in each protien and plots a histogram. It also outputs a list of protiens with no TM helices because these are not included in the histogram. Note that most proteins have nine transmembrane helices. 
 
 ```{r}
 
@@ -187,11 +190,105 @@ no_TMs
 
 ```
 
+# View predict protein topology of all FLC/PKD2 domain protien from select species 
 
-TO DO: 
+This chuck plots the predicted transmembrane topology of each protein with an IPR040241 domain found in our select list of species. Note that some proteins have 
+```{r fig.height=5, fig.width=13}
 
-Create one fasta file with 9TM protien sequences 
-Plot topology of protiens with >7 TM regions
-Mafft align sequences 
+myfourcolours <- c("#e07a5f","#f2cc8f","#81b29a", "#6a4c93")
+
+seg_size <- 2
+big_text <- 15
+small_text <- 12
+my_theme <-  theme(
+    axis.title = element_text(size = big_text),
+    legend.title = element_text(size = big_text),
+    legend.text = element_text(size = small_text)
+  )
+
+topology_plot <- 
+  ggplot(data = DeepTMHMM_result, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
+  geom_segment(size =seg_size, lineend = "square") + 
+  theme_classic() +
+facet_grid(phylum ~ . , scales = "free_y", space = "free", switch = "y") +
+  labs(x = "residue", y = "phylum") +
+  theme(strip.placement = "outside", 
+        strip.background = element_blank(),
+        strip.text.y.left = element_text(angle = 0, hjust=1),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank())
+
+topology_plot + scale_color_manual(values = myfourcolours)+ 
+geom_text(data = DeepTMHMM_result %>% group_by(uniprotID) %>% 
+filter(dom_start == min(dom_start)),
+aes(x = dom_start, y = uniprotID, label = uniprotID),
+nudge_x = -10,
+hjust = 1,
+show.legend = FALSE, 
+colour = "black",
+size = 2
+)
+#ggsave(here::here("data/output_images/topology_plot_all_protiens_from_select_taxa.png"), height = 12, width = 15)
+
+
+```
+
+# Select protiens with nine transmembrane alpha helcies 
+ 
+This chunk further filters out protein list to contain sequences with nine predicted transmembrane alpha helices and plots their predicted topology.
+
+```{r}
+
+nineTM_protiens <- TM_helix_df %>% 
+  filter(TM_helix_number == 9)
+
+nineTM_protien_topology <- DeepTMHMM_result %>% 
+  filter(uniprotID %in% nineTM_protiens$uniprotID) %>% 
+  group_by(uniprotID)
+
+nineTM_topology_plot <- 
+  ggplot(data = nineTM_protien_topology, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
+  geom_segment(size =seg_size, lineend = "square") + 
+  theme_classic() +
+facet_grid(phylum ~ . , scales = "free_y", space = "free", switch = "y") +
+  labs(x = "residue", y = "phylum") +
+  theme(strip.placement = "outside", 
+        strip.background = element_blank(),
+        strip.text.y.left = element_text(angle = 0, hjust=1),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank())
+
+nineTM_topology_plot + scale_color_manual(values = myfourcolours)+ 
+geom_text(data = nineTM_protien_topology %>% group_by(uniprotID) %>% 
+filter(dom_start == min(dom_start)),
+aes(x = dom_start, y = uniprotID, label = uniprotID),
+nudge_x = -10,
+hjust = 1,
+show.legend = FALSE, 
+colour = "black",
+size = 2
+)
+
+#ggsave(here::here("data/output_images/topology_plot_9TM_protiens_from_select_taxa.png"), height = 12, width = 15)
+
+```
+
+
+# Truncate nine TM protiens by domain 
+
+This chuck take our list of 9TM proteins and writes a new fasta file. It also writes fasta files containing the pre- trans membrane N-terminal sequences, the transmembrane region sequences and the post-transmembrane C-terminal sequences. 
+
+```{r}
+nineTM_protein_fasta <-
+protein_seqs[nineTM_protiens$uniprotID]
+nineTM_protein_fasta
+writeXStringSet(filtered_protein_fasta, here::here("data", "MAFFT-alignment", "9TM_full_length.fasta"))
+
+
+
+
+
+```
+
 
 
